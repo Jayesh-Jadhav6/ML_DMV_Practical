@@ -1,0 +1,56 @@
+Data converter :
+
+import pandas as pd
+df = pd.read_csv("sales_data.csv")
+df.to_excel("sales_data.xlsx", index=False)
+df = pd.read_csv("sales_data.csv")
+df.to_json("sales_data.json", orient="records", lines=True)
+
+
+
+import pandas as pd
+
+# Load CSV file
+csv_data = pd.read_csv('sales_data.csv')
+
+# Load Excel file
+excel_data = pd.read_excel('sales_data.xlsx')
+
+# Load JSON file
+json_data = pd.read_json('sales_data.json')
+
+
+# Display first 5 rows
+print(csv_data.head())
+print(excel_data.head())
+print(json_data.head())
+
+
+
+# Check column names and data types
+print(csv_data.info())
+print(excel_data.info())
+print(json_data.info())
+
+
+# Example: Remove duplicates
+csv_data = csv_data.drop_duplicates()
+excel_data = excel_data.drop_duplicates()
+json_data = json_data.drop_duplicates()
+
+# Example: Handle missing values (fill with 0 or mean)
+csv_data = csv_data.fillna(0)
+excel_data = excel_data.fillna(0)
+json_data = json_data.fillna(0)
+
+# Combine all data into one common DataFrame
+combined_data = pd.concat([csv_data, excel_data, json_data], ignore_index=True)
+
+# Total sales amount
+print("Total Sales:", combined_data['Sales_Amount'].sum())
+
+# Average sales per region
+print(combined_data.groupby('Region')['Sales_Amount'].mean())
+
+# Display final combined data
+print(combined_data.head())

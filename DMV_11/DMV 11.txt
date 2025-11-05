@@ -1,0 +1,80 @@
+# ---------------------------------------------
+# Data Visualization using Matplotlib
+# Problem: Analyzing Air Quality Index (AQI) Trends in a City
+# ---------------------------------------------
+
+# Step 1: Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Step 2: Load the dataset
+data = pd.read_csv("city_day.csv")
+
+# Step 3: Explore dataset
+print("First 5 rows of data:")
+print(data.head())
+
+print("\nDataset info:")
+print(data.info())
+
+print("\nSummary statistics:")
+print(data.describe())
+
+# Step 4: Identify relevant columns
+# Assuming columns: 'Date', 'PM2.5', 'PM10', 'CO', 'AQI'
+
+# Convert 'Date' to datetime for time series plotting
+data['Date'] = pd.to_datetime(data['Date'])
+
+# Step 5: Plot overall AQI trend over time
+plt.figure(figsize=(10, 5))
+plt.plot(data['Date'], data['AQI'], color='green', linewidth=2)
+plt.title("Overall AQI Trend Over Time")
+plt.xlabel("Date")
+plt.ylabel("Air Quality Index (AQI)")
+plt.grid(True)
+plt.show()
+
+# Step 6: Plot individual pollutant levels
+plt.figure(figsize=(10, 5))
+plt.plot(data['Date'], data['PM2.5'], label='PM2.5', color='blue')
+plt.plot(data['Date'], data['PM10'], label='PM10', color='orange')
+plt.plot(data['Date'], data['CO'], label='CO', color='red')
+plt.title("Pollutant Levels Over Time")
+plt.xlabel("Date")
+plt.ylabel("Concentration Level")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Step 7: Bar plot to compare AQI values over time
+plt.figure(figsize=(10, 5))
+plt.bar(data['Date'], data['AQI'], color='purple')
+plt.title("AQI Comparison Across Dates")
+plt.xlabel("Date")
+plt.ylabel("AQI")
+plt.xticks(rotation=45)
+plt.show()
+
+# Step 8: Box plot to analyze AQI distribution
+plt.figure(figsize=(7, 5))
+plt.boxplot(
+    [data['PM2.5'].dropna(), data['PM10'].dropna(), data['CO'].dropna()],
+    labels=['PM2.5', 'PM10', 'CO']
+)
+plt.title("Distribution of Pollutant Levels")
+plt.ylabel("Concentration Level")
+plt.grid(True)
+plt.show()
+
+
+# Step 9: Scatter plot to explore AQI vs PM2.5
+plt.figure(figsize=(7, 5))
+plt.scatter(data['PM2.5'], data['AQI'], color='red', alpha=0.6)
+plt.title("Relationship between PM2.5 and AQI")
+plt.xlabel("PM2.5")
+plt.ylabel("AQI")
+plt.grid(True)
+plt.show()
+
+

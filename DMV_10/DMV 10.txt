@@ -1,0 +1,72 @@
+# -----------------------------------------
+# Part 1: Import Required Libraries
+# -----------------------------------------
+import pandas as pd
+import numpy as np
+
+# -----------------------------------------
+# Part 2: Load the Dataset
+# -----------------------------------------
+data = pd.read_csv("d1091702-fa55-461a-9e16-a04220f33ea9.csv")
+
+# Display first few rows and basic info
+print("----- Initial Data -----")
+print(data.head(), "\n")
+print(data.info(), "\n")
+
+# -----------------------------------------
+# Part 3: Clean Column Names
+# -----------------------------------------
+data.columns = data.columns.str.strip().str.lower().str.replace(' ', '_').str.replace('[^a-zA-Z0-9_]', '', regex=True)
+print("Cleaned Column Names:\n", data.columns, "\n")
+
+# -----------------------------------------
+# Part 4: Handle Missing Values
+# -----------------------------------------
+print("Missing Values Before:\n", data.isnull().sum(), "\n")
+
+# Fill numerical with mean, categorical with mode
+for col in data.columns:
+    if data[col].dtype == 'object':
+        data[col].fillna(data[col].mode()[0], inplace=True)
+    else:
+        data[col].fillna(data[col].mean(), inplace=True)
+
+print("Missing Values After:\n", data.isnull().sum(), "\n")
+
+# -----------------------------------------
+# Part 5: Filter and Subset Data
+# Example: Houses with 3 or more bedrooms and air conditioning
+# -----------------------------------------
+subset = data[(data['bedrooms'] >= 3) & (data['airconditioning'] == 'yes')]
+print("Filtered Data (3+ Bedrooms with AC):\n", subset.head(), "\n")
+
+# -----------------------------------------
+# Part 6: Encode Categorical Variables
+# -----------------------------------------
+cat_cols = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 
+             'airconditioning', 'prefarea', 'furnishingstatus']
+
+data_encoded = pd.get_dummies(data, columns=cat_cols, drop_first=True)
+print("Encoded Data (with One-Hot Encoding):\n", data_encoded.head(), "\n")
+
+# -----------------------------------------
+# Part 7: Aggregate Data
+# Example: Average price by number of bedrooms
+# -----------------------------------------
+avg_price_by_bedrooms = data.groupby('bedrooms')['price'].mean().reset_index().rename(columns={'price': 'avg_price'})
+print("Average Price by Bedrooms:\n", avg_price_by_bedrooms, "\n")
+
+# -----------------------------------------
+# Part 8: Identify and Handle Outliers
+# Example: Remove properties with price beyond 99th percentile
+# -----------------------------------------
+upper_limit = data['price'].quantile(0.99)
+data = data[data['price'] <= upper_limit]
+print("Data after removing outliers:\n", data.describe(), "\n")
+
+# -----------------------------------------
+# Final Check
+# -----------------------------------------
+print("Final Dataset Shape:", data.shape)
+print("Final Columns:", data.columns.tolist())

@@ -1,0 +1,64 @@
+import numpy as np
+
+# Add a random Region column
+regions = ['North', 'South', 'East', 'West']
+data['Region'] = np.random.choice(regions, size=len(data))
+
+# Save or use directly for analysis
+print(data.head())
+
+
+
+
+
+
+
+# Step 1: Import required libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Step 2: Load the dataset
+data = pd.read_csv("Retail_Sales_Data.csv")
+
+# Step 3: Explore the dataset
+print("First 5 rows of dataset:\n", data.head())
+print("\nDataset Info:\n")
+print(data.info())
+print("\nSummary Statistics:\n", data.describe())
+
+# Step 4: Identify relevant variables
+# Assuming dataset has columns: 'Region', 'Product_Category', 'Quantity', 'Sales_Amount'
+
+# Step 5: Group by region and calculate total sales
+region_sales = data.groupby('Region')['Sales_Amount'].sum().reset_index()
+print("\nTotal Sales by Region:\n", region_sales)
+
+# Step 6: Visualize sales distribution by region (Bar Plot)
+plt.figure(figsize=(7, 5))
+plt.bar(region_sales['Region'], region_sales['Sales_Amount'])
+plt.title("Total Sales by Region")
+plt.xlabel("Region")
+plt.ylabel("Total Sales Amount")
+plt.show()
+
+# Step 7: Pie chart for region-wise sales share
+plt.figure(figsize=(6, 6))
+plt.pie(region_sales['Sales_Amount'], labels=region_sales['Region'], autopct='%1.1f%%')
+plt.title("Sales Distribution by Region")
+plt.show()
+
+# Step 8: Identify top-performing regions
+top_regions = region_sales.sort_values(by='Sales_Amount', ascending=False)
+print("\nTop Performing Regions:\n", top_regions.head())
+
+# Step 9: Group data by region and product category
+region_category_sales = data.groupby(['Region', 'Product_Category'])['Sales_Amount'].sum().unstack()
+print("\nSales by Region and Product Category:\n", region_category_sales)
+
+# Step 10: Visualize with stacked bar plot
+region_category_sales.plot(kind='bar', stacked=True, figsize=(8, 6))
+plt.title("Sales by Region and Product Category (Stacked Bar)")
+plt.xlabel("Region")
+plt.ylabel("Total Sales Amount")
+plt.legend(title='Product Category')
+plt.show()

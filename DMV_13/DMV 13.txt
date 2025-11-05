@@ -1,0 +1,104 @@
+# Install (run only if not installed)
+# !pip install statsmodels
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.arima.model import ARIMA
+
+plt.rcParams["figure.figsize"] = (9, 5)
+plt.style.use('seaborn-v0_8-whitegrid')
+
+# Replace with your CSV file path
+# Example: "C:/Users/YourName/Downloads/Stock_Prices.csv"
+df = pd.read_csv("Stock_Prices.csv")
+
+# Display basic info
+print("Dataset loaded successfully!")
+print(df.head())
+print("\nColumns:", df.columns.tolist())
+
+# Clean column names
+df.columns = df.columns.str.strip()
+
+# Convert 'Date' column to datetime
+df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+
+# Sort by date and set as index
+df = df.sort_values('Date').set_index('Date')
+
+# Handle missing values by interpolation
+df = df.interpolate()
+
+# Display dataset info
+print(df.info())
+
+plt.figure()
+plt.plot(df['Close'], label='Closing Price', color='blue')
+plt.title("Stock Price Over Time")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.legend()
+plt.show()
+
+df['MA10'] = df['Close'].rolling(window=10, min_periods=1).mean()
+df['MA30'] = df['Close'].rolling(window=30, min_periods=1).mean()
+
+plt.figure()
+plt.plot(df['Close'], label='Close', alpha=0.6)
+plt.plot(df['MA10'], label='10-Day MA', color='orange')
+plt.plot(df['MA30'], label='30-Day MA', color='green')
+plt.title("Moving Averages of Stock Price")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.legend()
+plt.show()
+
+# Convert to business-day frequency and fill missing days
+price_daily = df['Close'].asfreq('B').ffill()
+
+# Decompose into trend, seasonal, and residual
+decomp = seasonal_decompose(price_daily, model='multiplicative', period=30)
+decomp.plot()
+plt.suptitle("Seasonal Decomposition of Stock Prices", y=1.02)
+plt.show()
+
+if 'Volume' in df.columns:
+    df['Return'] = df['Close'].pct_change()
+    corr = df[['Return', 'Volume']].corr().iloc[0,1]
+    print(f"Correlation between daily returns and volume: {corr:.3f}")
+else:
+    print("Volume column not found — skipping correlation analysis.")
+
+# Convert to daily frequency for ARIMA
+series = df['Close'].asfreq('B').ffill()
+
+# Split into train/test (90/10 split)
+train_size = int(len(series) * 0.9)
+train, test = series.iloc[:train_size], series.iloc[train_size:]
+
+# Build and fit ARIMA model
+model = ARIMA(train, order=(1,1,1))
+model_fit = model.fit()
+
+# Forecast
+forecast = model_fit.forecast(steps=len(test))
+
+# Plot forecast
+plt.figure()
+plt.plot(train.index, train, label='Train')
+plt.plot(test.index, test, label='Actual')
+plt.plot(test.index, forecast, label='Forecast', color='red')
+plt.title("ARIMA Forecasting of Stock Prices")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.legend()
+plt.show()
+
+# Evaluate forecast
+rmse = math.sqrt(np.mean((forecast - test)**2))
+print(f"RMSE (Root Mean Squared Error): {rmse:.2f}")
+

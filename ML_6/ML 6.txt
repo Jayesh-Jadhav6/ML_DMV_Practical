@@ -1,0 +1,34 @@
+import numpy as np, random
+
+# Maze: 0=free, 1=wall, 2=start, 3=goal
+maze = np.array([
+ [2,0,0,0],
+ [1,1,0,1],
+ [0,0,0,3]
+])
+
+start = (0,0); goal = (2,3)
+moves = [(-1,0),(1,0),(0,-1),(0,1)]  # up, down, left, right
+Q = np.zeros((maze.size, 4))
+
+def step(s,a):
+    r,c=s; dr,dc=moves[a]; nr,nc=r+dr,c+dc
+    if nr<0 or nc<0 or nr>=3 or nc>=4 or maze[nr,nc]==1: return s,-1,False
+    if (nr,nc)==goal: return (nr,nc),10,True
+    return (nr,nc),-1,False
+
+# Training
+for _ in range(500):
+    s=start
+    for _ in range(50):
+        a = random.randint(0,3) if random.random()<0.3 else np.argmax(Q[s[0]*4+s[1]])
+        ns,r,done = step(s,a)
+        Q[s[0]*4+s[1],a] += 0.1*(r + 0.9*np.max(Q[ns[0]*4+ns[1]]) - Q[s[0]*4+s[1],a])
+        s=ns
+        if done: break
+
+# Test learned path
+s=start; path=[s]
+while s!=goal:
+    a=np.argmax(Q[s[0]*4+s[1]]); s,_r,_d=step(s,a); path.append(s)
+print("Path learned:", path)

@@ -1,0 +1,66 @@
+import requests
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Step 1: Define API endpoint and parameters
+api_key = "YOUR_API_KEY"
+city = "Pune"
+url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric"
+
+# Step 2: Get JSON response
+response = requests.get(url)
+data = response.json()
+
+# Step 3: Extract weather info
+weather_data = []
+for item in data['list']:
+    dt = item['dt_txt']
+    temp = item['main']['temp']
+    humidity = item['main']['humidity']
+    wind = item['wind']['speed']
+    weather_data.append([dt, temp, humidity, wind])
+
+# Step 4: Convert to DataFrame
+df = pd.DataFrame(weather_data, columns=['datetime', 'temperature', 'humidity', 'wind_speed'])
+df.head()
+
+# Step 5: Clean data
+df['datetime'] = pd.to_datetime(df['datetime'])
+df = df.dropna()
+
+print("Average Temperature:", df['temperature'].mean())
+print("Max Temperature:", df['temperature'].max())
+print("Min Temperature:", df['temperature'].min())
+
+plt.figure(figsize=(10,5))
+plt.plot(df['datetime'], df['temperature'], marker='o')
+plt.title('Temperature Trend Over Time')
+plt.xlabel('Date/Time')
+plt.ylabel('Temperature (°C)')
+plt.grid(True)
+plt.show()
+
+plt.figure(figsize=(10,5))
+plt.bar(df['datetime'], df['humidity'], color='skyblue')
+plt.title('Humidity Levels Over Time')
+plt.xlabel('Date/Time')
+plt.ylabel('Humidity (%)')
+plt.xticks(rotation=45)
+plt.show()
+
+df['date'] = df['datetime'].dt.date
+daily_avg = df.groupby('date')[['temperature', 'humidity', 'wind_speed']].mean().reset_index()
+print(daily_avg)
+
+
+import folium
+
+map = folium.Map(location=[18.5204, 73.8567], zoom_start=10)
+folium.Marker([18.5204, 73.8567], popup=f"{city}: {df['temperature'].mean():.1f}°C").add_to(map)
+map
+
+import seaborn as sns
+
+sns.heatmap(df[['temperature','humidity','wind_speed']].corr(), annot=True, cmap='coolwarm')
+plt.title('Correlation Between Weather Attributes')
+plt.show()
